@@ -2,6 +2,7 @@ services:
   - type: web
     name: telegram-welcome-bot
     env: python
+    pythonVersion: "3.12"  # ← ADDED: Forces stable Python 3.12
     buildCommand: pip install -r requirements.txt
     startCommand: python main.py
     plan: free
