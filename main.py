@@ -1,10 +1,11 @@
 import os
 import threading
+import asyncio
 from telegram import Update
 from telegram.ext import Application, ContextTypes, MessageHandler, filters
 from http.server import HTTPServer, BaseHTTPRequestHandler
 
-# === GET TOKEN FROM RENDER ===
+# === GET TOKEN ===
 TOKEN = os.getenv("TOKEN")
 if not TOKEN:
     raise ValueError("ERROR: Set 'TOKEN' in Render Environment Variables!")
@@ -31,23 +32,24 @@ async def welcome(update: Update, context: ContextTypes.DEFAULT_TYPE):
                 "3. English only"
             )
 
-# === BOT THREAD ===
-def start_bot():
-    app = Application.builder().token(TOKEN).build()
-    app.add_handler(MessageHandler(filters.StatusUpdate.NEW_CHAT_MEMBERS, welcome))
-    print("Bot is running...")
-    app.run_polling()
-
-# === MAIN ===
-def main():
+# === HTTP SERVER IN BACKGROUND ===
+def run_http_server():
     port = int(os.getenv("PORT", 10000))
     server = HTTPServer(("", port), HealthHandler)
-    print(f"HTTP server on port {port}")
-    
-    bot_thread = threading.Thread(target=start_bot, daemon=True)
-    bot_thread.start()
-    
+    print(f"HTTP server running on port {port}")
     server.serve_forever()
+
+# === MAIN: RUN POLLING IN MAIN THREAD ===
+def main():
+    # Start HTTP server in background
+    http_thread = threading.Thread(target=run_http_server, daemon=True)
+    http_thread.start()
+
+    # Build and run bot in main thread (has event loop)
+    print("Starting Telegram bot polling...")
+    app = Application.builder().token(TOKEN).build()
+    app.add_handler(MessageHandler(filters.StatusUpdate.NEW_CHAT_MEMBERS, welcome))
+    app.run_polling()
 
 if __name__ == "__main__":
     main()
