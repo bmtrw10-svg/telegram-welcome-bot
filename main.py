@@ -2,7 +2,7 @@ from telegram import Update
 from telegram.ext import Application, ContextTypes, MessageHandler, filters
 
 # === CONFIG ===
-TOKEN = "PASTE_YOUR_TOKEN_HERE"  # ← CHANGE THIS LATER
+TOKEN = "PASTE_YOUR_TOKEN_HERE"  # ← Already set in Render env vars, so this is ignored
 
 # === WELCOME FUNCTION ===
 async def welcome(update: Update, context: ContextTypes.DEFAULT_TYPE):
